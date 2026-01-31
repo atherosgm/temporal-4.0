@@ -6,3 +6,4 @@ yarn-debug.*
 yarn-error.*
 android/
 ios/
+.env*
