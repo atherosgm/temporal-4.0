@@ -35,7 +35,7 @@
         "@rnmapbox/maps",
         {
           "RNMapboxMapsImpl": "mapbox",
-          "RNMapboxMapsDownloadToken": "MAPBOX_DOWNLOAD_TOKEN"
+          "RNMapboxMapsDownloadToken": "sk.eyJ1IjoidGVtcG9yYWxhcHAiLCJhIjoiY21sMjQya2NmMGVmZDNjb20wa3hnYm45byJ9.ZKTm1aQsyk7X4XdqKdAjmQ"
         }
       ],
       [
@@ -46,6 +46,7 @@
       ]
     ],
     "extra": {
+      "MAPBOX_DOWNLOADS_TOKEN": "sk.eyJ1IjoidGVtcG9yYWxhcHAiLCJhIjoiY21sMjQya2NmMGVmZDNjb20wa3hnYm45byJ9.ZKTm1aQsyk7X4XdqKdAjmQ",
       "eas": {
         "projectId": "bf84a75f-005d-41c8-a848-a38a80f21807"
       }
