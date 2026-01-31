@@ -15,60 +15,72 @@ export default function App() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   
-  // Modales
   const [verificationModal, setVerificationModal] = useState(false);
   const [walletModal, setWalletModal] = useState(false);
-
-  // Estados de Datos
   const [nearbyJobs, setNearbyJobs] = useState([]);
   const [walletHistory, setWalletHistory] = useState([]);
 
   useEffect(() => {
     setTimeout(() => { setIsReady(true); }, 2000);
-    const initApp = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      if (session) {
-        await fetchProfile(session.user.id);
-        await requestLocationAndJobs();
-        await fetchWalletHistory(session.user.id);
-      }
-    };
     initApp();
   }, []);
 
+  const initApp = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      setSession(session);
+      await fetchProfile(session.user.id);
+    }
+  };
+
+  const handleLogin = async () => {
+    setLoading(true);
+    // Intenta un inicio de sesión anónimo para saltar el bloqueo
+    const { data, error } = await supabase.auth.signInAnonymously();
+    
+    if (error) {
+      Alert.alert("Error de Conexión", error.message);
+    } else if (data.session) {
+      setSession(data.session);
+      await fetchProfile(data.session.user.id);
+    }
+    setLoading(false);
+  };
+
   async function fetchProfile(id) {
-    const { data } = await supabase.from('profiles').select('*').eq('id', id).single();
-    if (data) { setProfile(data); setStep('dashboard'); } else { setStep('profile'); }
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
+    if (data) { 
+      setProfile(data); 
+      setStep('dashboard'); 
+      await requestLocationAndJobs();
+      await fetchWalletHistory(id);
+    } else { 
+      // Si no hay perfil, podrías crearlo aquí o mandar a una pantalla de registro
+      setStep('dashboard'); // Forzamos entrada para pruebas
+    }
   }
 
-  // --- PUNTO B: ALGORITMO DE CERCANÍA ---
   async function requestLocationAndJobs() {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') return;
     let location = await Location.getCurrentPositionAsync({});
-    const { data } = await supabase.rpc('get_jobs_by_distance', {
-      user_lat: location.coords.latitude, user_lng: location.coords.longitude
+    
+    const { data, error } = await supabase.rpc('get_jobs_by_distance', {
+      user_lat: location.coords.latitude, 
+      user_lng: location.coords.longitude
     });
     if (data) setNearbyJobs(data);
   }
 
-  // --- PUNTO D: HISTORIAL DETALLADO ---
   async function fetchWalletHistory(id) {
     const { data } = await supabase.from('wallet_history').select('*').eq('profile_id', id).order('created_at', { ascending: false });
     if (data) setWalletHistory(data);
   }
 
-  // --- PUNTO C: CALIFICACIONES (LOGICA) ---
-  const handleRate = async (rating) => {
-    Alert.alert("Calificación", `Has calificado con ${rating} estrellas.`);
-    // Aquí iría el insert a la tabla reviews
-  };
-
   const handleApplyVerification = async () => {
     setLoading(true);
     await supabase.from('profiles').update({ verification_status: 'pending' }).eq('id', session.user.id);
-    fetchProfile(session.user.id);
+    await fetchProfile(session.user.id);
     setVerificationModal(false);
     setLoading(false);
   };
@@ -84,8 +96,8 @@ export default function App() {
   if (step === 'auth' && !session) return (
     <View style={styles.authContainer}>
       <Text style={styles.logoTitle}>TEMPORAL</Text>
-      <TouchableOpacity style={styles.btnPrimary} onPress={() => Alert.alert("Login", "Usa tu flujo de Supabase")}>
-        <Text style={styles.btnText}>INGRESAR</Text>
+      <TouchableOpacity style={styles.btnPrimary} onPress={handleLogin} disabled={loading}>
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>INGRESAR</Text>}
       </TouchableOpacity>
       <Text style={styles.footerBranding}>by MontSant</Text>
     </View>
@@ -94,11 +106,9 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      
-      {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.userInfoRow}>
-          <Text style={styles.userName}>{profile?.full_name || 'Usuario'}</Text>
+          <Text style={styles.userName}>{profile?.full_name || 'Usuario Temporal'}</Text>
           {profile?.is_verified && <View style={styles.verifiedBadge}><Text style={styles.verifiedText}>✓</Text></View>}
         </View>
         <TouchableOpacity onPress={() => setVerificationModal(true)}>
@@ -107,7 +117,6 @@ export default function App() {
       </View>
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        {/* BILLETERA (RESUMEN) */}
         <TouchableOpacity style={styles.walletCard} onPress={() => setWalletModal(true)}>
           <Text style={{color: '#FFF', opacity: 0.8}}>Saldo Disponible</Text>
           <Text style={styles.walletAmount}>S/ {profile?.wallet_balance?.toFixed(2) || '0.00'}</Text>
@@ -115,9 +124,8 @@ export default function App() {
         </TouchableOpacity>
 
         <View style={styles.padding20}>
-          {/* LISTA DE TRABAJOS CERCANOS */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Trabajos Cerca (InDriver Style)</Text>
+            <Text style={styles.sectionTitle}>Trabajos Cerca</Text>
             <TouchableOpacity onPress={requestLocationAndJobs}><Text style={{color: '#6366F1'}}>🔄</Text></TouchableOpacity>
           </View>
 
@@ -125,12 +133,11 @@ export default function App() {
             <TouchableOpacity key={job.id} style={styles.jobCard}>
               <View style={{flex: 1}}>
                 <Text style={styles.jobTitle}>{job.title}</Text>
-                {/* PUNTO C: SISTEMA DE ESTRELLAS */}
                 <View style={{flexDirection: 'row', marginTop: 4}}>
                   {[1,2,3,4,5].map(s => <Text key={s} style={{color: '#FBBF24', fontSize: 12}}>★</Text>)}
                   <Text style={{fontSize: 10, color: '#94A3B8', marginLeft: 5}}>(4.8)</Text>
                 </View>
-                <Text style={styles.jobDistance}>📍 A {job.distancia_km.toFixed(1)} km de ti</Text>
+                <Text style={styles.jobDistance}>📍 A {job.distancia_km?.toFixed(1) || 0} km de ti</Text>
               </View>
               <View style={styles.priceContainer}>
                 <Text style={styles.jobPrice}>S/ {job.price}</Text>
@@ -138,7 +145,6 @@ export default function App() {
             </TouchableOpacity>
           ))}
 
-          {/* PUNTO A: SEGURIDAD */}
           <Text style={styles.sectionTitle}>Seguridad y Confianza</Text>
           <TouchableOpacity style={styles.verificationCard} onPress={() => setVerificationModal(true)}>
              <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -156,7 +162,6 @@ export default function App() {
         </View>
       </ScrollView>
 
-      {/* MODAL HISTORIAL (PUNTO D) */}
       <Modal visible={walletModal} animationType="slide">
         <SafeAreaView style={{flex: 1}}>
           <View style={styles.modalHeader}>
@@ -182,7 +187,6 @@ export default function App() {
         </SafeAreaView>
       </Modal>
 
-      {/* MODAL VERIFICACIÓN (PUNTO A) */}
       <Modal visible={verificationModal} animationType="fade" transparent={true}>
         <View style={styles.modalBg}>
           <View style={styles.modalContent}>
