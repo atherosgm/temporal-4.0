@@ -1,42 +1,33 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { supabase } from '../supabaseClient';
+import { useSettings } from '../SettingsContext';
 
 export default function AuthScreen() {
+  const { colors, t } = useSettings();
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     setLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signInAnonymously();
-      if (error) throw error;
-      // Al iniciar sesión, App.js lo detectará automáticamente y te llevará al Dashboard
-    } catch (error) {
-      Alert.alert("Error de Conexión", "No pudimos conectar con el servidor: " + error.message);
-    } finally {
-      setLoading(false);
-    }
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) Alert.alert("Error", error.message);
+    setLoading(false);
   };
 
   return (
-    <View style={styles.authContainer}>
-      <Text style={styles.logoTitle}>TEMPORAL</Text>
-      <Text style={styles.subtitle}>Trabajos rápidos, soluciones inmediatas.</Text>
-      
-      <TouchableOpacity style={styles.btnPrimary} onPress={handleLogin} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>INGRESAR</Text>}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.logo, { color: colors.primary }]}>TEMPORAL</Text>
+      <Text style={[styles.sub, { color: colors.textMuted }]}>{t('auth_subtitle')}</Text>
+      <TouchableOpacity style={[styles.btn, { backgroundColor: colors.primary }]} onPress={handleLogin}>
+        {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.btnText}>{t('auth_btn')}</Text>}
       </TouchableOpacity>
-      
-      <Text style={styles.footerBranding}>by MontSant</Text>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
-  authContainer: { flex: 1, padding: 40, justifyContent: 'center', backgroundColor: '#FFF' },
-  logoTitle: { fontSize: 40, fontWeight: '900', color: '#6366F1', textAlign: 'center' },
-  subtitle: { textAlign: 'center', color: '#64748B', marginBottom: 50 },
-  btnPrimary: { backgroundColor: '#6366F1', padding: 18, borderRadius: 15, alignItems: 'center' },
-  btnText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
-  footerBranding: { textAlign: 'center', marginTop: 100, color: '#CBD5E1', fontWeight: 'bold' }
+  container: { flex: 1, justifyContent: 'center', padding: 40 },
+  logo: { fontSize: 40, fontWeight: '900', textAlign: 'center' },
+  sub: { textAlign: 'center', marginBottom: 40 },
+  btn: { padding: 20, borderRadius: 15, alignItems: 'center' },
+  btnText: { color: '#FFF', fontWeight: 'bold' }
 });
