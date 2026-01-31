@@ -4,9 +4,13 @@ import Mapbox from '@rnmapbox/maps';
 import * as Location from 'expo-location';
 import { createClient } from '@supabase/supabase-js';
 
-// --- CONFIGURACIÓN ---
+// --- CONFIGURACIÓN SEGURA (LEER DESDE EXPO ENVIRONMENT VARIABLES) ---
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+// Inicialización de clientes
 Mapbox.setAccessToken('pk.eyJ1IjoidGVtcG9yYWxhcHAiLCJhIjoiY21nbjhzMDYzMDFhdDJrcHU0ODFjeW0xNCJ9.WGoReMaeu5xfNhpI3nmA6Q');
-const supabase = createClient('https://xcovsmzfxvtjftztlybg.supabase.co', 'sb_publishable_CSz5kJwV_BMcT9v5uEH0hg_-F6g7a6j');
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function App() {
   const [isReady, setIsReady] = useState(false); 
@@ -35,7 +39,7 @@ export default function App() {
 
   const handleLogin = async () => {
     setLoading(true);
-    // Intenta un inicio de sesión anónimo para saltar el bloqueo
+    // Intenta un inicio de sesión anónimo (Asegúrate de tenerlo activado en Supabase)
     const { data, error } = await supabase.auth.signInAnonymously();
     
     if (error) {
@@ -55,8 +59,8 @@ export default function App() {
       await requestLocationAndJobs();
       await fetchWalletHistory(id);
     } else { 
-      // Si no hay perfil, podrías crearlo aquí o mandar a una pantalla de registro
-      setStep('dashboard'); // Forzamos entrada para pruebas
+      // Forzamos entrada para pruebas reales si el perfil no existe aún
+      setStep('dashboard'); 
     }
   }
 
