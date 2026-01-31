@@ -23,4 +23,21 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.montsant.te
+      "package": "com.montsant.temporal",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "FOREGROUND_SERVICE"
+      ]
+    },
+    "plugins": [
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsImpl": "mapbox",
+          "RNMapboxMapsDownloadToken": "pk.eyJ1IjoidGVtcG9yYWxhcHAiLCJhIjoiY21nbjhzMDYzMDFhdDJrcHU0ODFjeW0xNCJ9.WGoReMaeu5xfNhpI3nmA6Q"
+        }
+      ]
+    ]
+  }
+}
