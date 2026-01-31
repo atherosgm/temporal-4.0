@@ -1,5 +1,8 @@
 node_modules/
 .expo/
-.eas/
 dist/
-*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+android/
+ios/
