@@ -3,13 +3,24 @@
     "name": "Temporal",
     "slug": "temporal-app",
     "version": "1.0.0",
+    "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "android": {
-      "package": "com.atherosgm.temporal",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
     },
-    "extra": {
-      "mapboxToken": "pk.eyJ1IjoidGVtcG9yYWxhcHAiLCJhIjoiY21nbjhzMDYzMDFhdDJrcHU0ODFjeW0xNCJ9.WGoReMaeu5xfNhpI3nmA6Q"
-    }
-  }
-}
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.montsant.temporal"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.montsant.te
