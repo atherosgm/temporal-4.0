@@ -10,6 +10,8 @@ import DashboardScreen from './screens/DashboardScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import RequestServiceScreen from './screens/RequestServiceScreen';
 import CreateProfileScreen from './screens/CreateProfileScreen';
+import JobDetailsScreen from './screens/JobDetailsScreen';
+import ManageApplicationsScreen from './screens/ManageApplicationsScreen'; // <--- NUEVA
 
 const Stack = createStackNavigator();
 
@@ -48,6 +50,8 @@ export default function App() {
               <Stack.Screen name="Onboarding" component={OnboardingScreen} />
               <Stack.Screen name="RequestService" component={RequestServiceScreen} />
               <Stack.Screen name="CreateProfile" component={CreateProfileScreen} />
+              <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
+              <Stack.Screen name="ManageApplications" component={ManageApplicationsScreen} />
             </>
           )}
         </Stack.Navigator>
